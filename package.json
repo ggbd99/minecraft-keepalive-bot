@@ -1,18 +1,33 @@
 {
-  "name": "minecraft-keepalive-bot",
-  "version": "1.0.0",
-  "description": "Keep your Minecraft server alive 24/7",
-  "main": "index.js",
+  "name": "minecraft-afk-bot",
+  "version": "1.1.0",
+  "description": "A human-like Mineflayer AFK bot designed to keep Minecraft servers (like Aternos) alive by simulating real player behavior.",
+  "main": "bot.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node bot.js"
   },
-  "keywords": ["minecraft", "bot", "keepalive"],
-  "author": "",
+  "author": {
+    "name": "Az-Har Muhamad Nayif"
+  },
   "license": "MIT",
-  "dependencies": {
-    "mineflayer": "^4.33.0"
+  "keywords": [
+    "minecraft",
+    "bot",
+    "mineflayer",
+    "afk",
+    "aternos",
+    "minecraft-bot"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourbestregard/minecraft-afk-bot.git"
   },
-  "engines": {
-    "node": ">=18.x"
+  "bugs": {
+    "url": "https://github.com/yourbestregard/minecraft-afk-bot/issues"
+  },
+  "homepage": "https://github.com/yourbestregard/minecraft-afk-bot#readme",
+  "dependencies": {
+    "mineflayer": "^4.29.0",
+    "mineflayer-pathfinder": "^2.4.5"
   }
 }
