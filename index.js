@@ -5,7 +5,6 @@ const CONFIG = {
   host: 'anyaxd.sdlf.fun',
   port: 25565,
   username: 'KeepAliveBot', // You can change this name
-  version: '1.21.10',
   auth: 'offline' // Since your server is in offline mode
 };
 
