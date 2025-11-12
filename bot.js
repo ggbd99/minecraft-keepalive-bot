@@ -7,6 +7,16 @@
  *
  * REQUIREMENT: The bot MUST have operator permissions (`/op <botname>`).
  */
+const http = require('http');
+const port = process.env.PORT || 3000; // Use the PORT Render provides, or 3000 for local testing
+
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Minecraft Bot is running.\n');
+}).listen(port, '0.0.0.0', () => {
+  console.log(`[System] Dummy web server started on port ${port} to keep Render happy.`);
+});
+
 
 // --- 1. IMPORTS ---
 
