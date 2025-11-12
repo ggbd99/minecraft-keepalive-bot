@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "mineflayer": "^4.23.0"
+    "mineflayer": "github:PrismarineJS/mineflayer"
   },
   "engines": {
     "node": ">=18.x"
