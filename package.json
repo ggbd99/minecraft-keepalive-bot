@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "mineflayer": "^5.2.0"
+    "mineflayer": "^4.33.0"
   },
   "engines": {
     "node": ">=18.x"
