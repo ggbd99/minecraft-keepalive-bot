@@ -16,8 +16,6 @@ http.createServer((req, res) => {
 }).listen(port, '0.0.0.0', () => {
   console.log(`[System] Dummy web server started on port ${port} to keep Render happy.`);
 });
-
-
 // --- 1. IMPORTS ---
 
 const mineflayer = require('mineflayer');
@@ -91,7 +89,12 @@ function createAndRunBot() {
       case 6: // Switch Hotbar Slot
         const newSlot=randomInt(0,8);bot.setQuickBarSlot(newSlot);break;
       case 7: // Look at Nearest Player
-        const player=bot.nearestEntity((e)=>e.type==='player'&&e.username!==bot.username);if(player){bot.lookAt(player.position.offset(0,player.height,0));}else{performRandomAction();return;}break;
+        const player=bot.nearestEntity((e)=>e.type==='player'&&e.username!==bot.username);
+        if(player){
+          bot.lookAt(player.position.offset(0,player.height,0));
+        }
+        // If no player is found, we simply do nothing and let the main timer below handle the next action.
+        break;
       case 8: // Do Nothing (Idle)
         break;
       case 9: // Toss Random Item (SAFE)
