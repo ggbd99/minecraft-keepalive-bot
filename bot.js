@@ -57,7 +57,7 @@ function createAndRunBot() {
    * This version is 100% safe and cannot break blocks.
    */
   function performRandomAction() {
-    if (!bot.entity) return;
+    if (!bot.entity || isDisconnecting) return; // Added isDisconnecting check
     const currentPos = bot.entity.position; const distanceFromHome = currentPos.distanceTo(new vec3(HOME_X, currentPos.y, HOME_Z));
 
     // Leash logic: If it gets knocked away, walk back.
@@ -90,10 +90,7 @@ function createAndRunBot() {
         const newSlot=randomInt(0,8);bot.setQuickBarSlot(newSlot);break;
       case 7: // Look at Nearest Player
         const player=bot.nearestEntity((e)=>e.type==='player'&&e.username!==bot.username);
-        if(player){
-          bot.lookAt(player.position.offset(0,player.height,0));
-        }
-        // If no player is found, we simply do nothing and let the main timer below handle the next action.
+        if(player){bot.lookAt(player.position.offset(0,player.height,0));}
         break;
       case 8: // Do Nothing (Idle)
         break;
@@ -107,35 +104,45 @@ function createAndRunBot() {
     hasSuccessfullySpawned = true;
     console.log(`✅ ${config.botUsername} has spawned!`);
 
-    /**
-     * This function initializes the bot in its permanent safe mode.
-     */
+    let afkModeStarted = false;
     const startSafeAFKMode = () => {
+      if (afkModeStarted) return; // Ensure it only runs once
+      afkModeStarted = true;
+
       console.log('[System] Configuring bot for SAFE AFK MODE.');
       const safeMovements = new Movements(bot);
-      safeMovements.canDig = false;    // Explicitly disable digging
-      safeMovements.canPlace = false; // Explicitly disable placing
+      safeMovements.canDig = false;
+      safeMovements.canPlace = false;
       bot.pathfinder.setMovements(safeMovements);
 
       console.log('[System] Starting random action cycle...');
       setTimeout(performRandomAction, 3000);
     };
 
-    // --- TELEPORT-ON-SPAWN LOGIC ---
     const homePosition = new vec3(HOME_X, HOME_Y, HOME_Z);
     const distanceFromHome = bot.entity.position.distanceTo(homePosition);
 
-    if (distanceFromHome > 10) { // If spawned more than 10 blocks away
+    if (distanceFromHome > 10) {
       console.log(`[System] Bot is ${distanceFromHome.toFixed(0)} blocks from base. Teleporting home...`);
       bot.chat(`/tp ${config.botUsername} ${HOME_X} ${HOME_Y} ${HOME_Z}`);
       
-      // Wait for the teleport to complete before starting AFK tasks
-      setTimeout(startSafeAFKMode, 2000);
+      // Wait for the server to confirm the bot has moved before starting AFK tasks.
+      // This is far more reliable than a fixed timeout.
+      console.log('[System] Waiting for teleport to complete...');
+      bot.once('move', startSafeAFKMode);
+
+      // Add a fallback timer in case the 'move' event never fires
+      setTimeout(() => {
+        if (!afkModeStarted) {
+          console.log('[System] Fallback timer triggered. Starting AFK mode.');
+          startSafeAFKMode();
+        }
+      }, 7000); // 7-second fallback
+
     } else {
       console.log('[System] Bot spawned at base. Starting safe AFK mode directly.');
       startSafeAFKMode();
     }
-    // --- END TELEPORT LOGIC ---
 
     resetWatchdog();
     setTimeout(() => { bot.end('proactive_session_reconnect'); }, SESSION_DURATION);
