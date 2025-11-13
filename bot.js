@@ -57,7 +57,7 @@ function createAndRunBot() {
    * This version is 100% safe and cannot break blocks.
    */
   function performRandomAction() {
-    if (!bot.entity || isDisconnecting) return; // Added isDisconnecting check
+    if (!bot.entity || isDisconnecting) return;
     const currentPos = bot.entity.position; const distanceFromHome = currentPos.distanceTo(new vec3(HOME_X, currentPos.y, HOME_Z));
 
     // Leash logic: If it gets knocked away, walk back.
@@ -68,7 +68,7 @@ function createAndRunBot() {
       return;
     }
 
-    const actionId = randomInt(0, 9); // We have 10 actions now (0-9)
+    const actionId = randomInt(0, 9);
     console.log(`[Action] Performing Action ID: ${actionId}`);
 
     if (actionId !== 5 && bot.pathfinder.isMoving()) { bot.pathfinder.stop(); }
@@ -106,7 +106,7 @@ function createAndRunBot() {
 
     let afkModeStarted = false;
     const startSafeAFKMode = () => {
-      if (afkModeStarted) return; // Ensure it only runs once
+      if (afkModeStarted) return;
       afkModeStarted = true;
 
       console.log('[System] Configuring bot for SAFE AFK MODE.');
@@ -126,18 +126,28 @@ function createAndRunBot() {
       console.log(`[System] Bot is ${distanceFromHome.toFixed(0)} blocks from base. Teleporting home...`);
       bot.chat(`/tp ${config.botUsername} ${HOME_X} ${HOME_Y} ${HOME_Z}`);
       
-      // Wait for the server to confirm the bot has moved before starting AFK tasks.
-      // This is far more reliable than a fixed timeout.
-      console.log('[System] Waiting for teleport to complete...');
-      bot.once('move', startSafeAFKMode);
-
-      // Add a fallback timer in case the 'move' event never fires
-      setTimeout(() => {
-        if (!afkModeStarted) {
-          console.log('[System] Fallback timer triggered. Starting AFK mode.');
+      const onMoveAfterTeleport = () => {
+        if (afkModeStarted) return; // Don't run if we already started
+        const currentPos = bot.entity.position;
+        // Check if the bot is now within a 5-block radius of its home base
+        if (homePosition.distanceTo(currentPos) < 5) {
+          console.log('[System] Teleport successful! Bot has arrived at base.');
+          bot.removeListener('move', onMoveAfterTeleport); // CRUCIAL: Stop listening to this event
           startSafeAFKMode();
         }
-      }, 7000); // 7-second fallback
+      };
+
+      console.log('[System] Waiting for teleport to be confirmed by checking position...');
+      bot.on('move', onMoveAfterTeleport);
+
+      // Add a fallback timer in case the move event never confirms the position
+      setTimeout(() => {
+        if (!afkModeStarted) {
+          console.log('[System] Fallback timer triggered. Attempting to start AFK mode anyway.');
+          bot.removeListener('move', onMoveAfterTeleport); // Clean up the listener
+          startSafeAFKMode();
+        }
+      }, 10000); // 10-second fallback
 
     } else {
       console.log('[System] Bot spawned at base. Starting safe AFK mode directly.');
@@ -155,4 +165,4 @@ function createAndRunBot() {
   bot.on('end', (reason) => { handleDisconnect(`Connection ended: ${reason}`); });
 }
 
-createAndRunBot();
+createAndRunBot();```
